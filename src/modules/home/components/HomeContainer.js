@@ -11,12 +11,13 @@ const HomeContainer = ({
   questions,
   getQuestions,
   setSelectedQuestion,
-  selectedQuestion
+  selectedQuestion,
+  getQuestionsLoading
 }) => {
   const [isOpen, setIsOpen] = useState(false)
-
+  const [currentPage, setCurrentPage] = useState(1)
   useEffect(() => {
-    getQuestions()
+    getQuestions(currentPage)
   }, [])
 
   const handleModal = () => {
@@ -32,8 +33,12 @@ const HomeContainer = ({
   return (
     <>
       <Home
-        questions={questions.items}
+        questions={questions}
         viewDetailsBtnHandler={viewDetailsBtnHandler}
+        getQuestionsLoading={getQuestionsLoading}
+        getQuestions={getQuestions}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
       />
       <QuestionDetailsModal
         open={isOpen}
@@ -45,24 +50,29 @@ const HomeContainer = ({
 }
 
 HomeContainer.propTypes = {
-  questions: PropTypes.instanceOf(Array),
+  questions: PropTypes.instanceOf(Object),
   getQuestions: PropTypes.func,
-  setSelectedQuestion: PropTypes.func
+  setSelectedQuestion: PropTypes.func,
+  selectedQuestion: PropTypes.instanceOf(Object),
+  getQuestionsLoading: PropTypes.bool
 }
 
 HomeContainer.defaultProps = {
-  questions: [],
+  questions: {},
   getQuestions: noop,
-  setSelectedQuestion: noop
+  setSelectedQuestion: noop,
+  selectedQuestion: {},
+  getQuestionsLoading: false
 }
 
 const mapStateToProps = (state) => ({
   questions: state.app.questions,
-  selectedQuestion: state.app.selectedQuestion
+  selectedQuestion: state.app.selectedQuestion,
+  getQuestionsLoading: state.app.getQuestionsLoading
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  getQuestions: () => dispatch(action.getQuestions()),
+  getQuestions: (pageNumber) => dispatch(action.getQuestions(pageNumber)),
   setSelectedQuestion: (question) =>
     dispatch(action.setSelectedQuestion(question))
 })

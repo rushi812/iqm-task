@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 import { withStyles, makeStyles } from '@material-ui/core/styles'
@@ -13,7 +13,7 @@ import Paper from '@material-ui/core/Paper'
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 
-import { formatedDate } from '../../../utils'
+import { formatedDate, noop } from '../../../utils'
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -51,12 +51,36 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-const Home = ({ questions, viewDetailsBtnHandler }) => {
+const Home = ({
+  questions,
+  viewDetailsBtnHandler,
+  getQuestionsLoading,
+  getQuestions,
+  currentPage,
+  setCurrentPage
+}) => {
+  const observer = useRef()
+  const pageNumber = useRef(0)
+  const lastQuestionElementref = useCallback(
+    (node) => {
+      if (getQuestionsLoading) return
+      if (observer.current) observer.current.disconnect()
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && questions.has_more) {
+          pageNumber.current = currentPage + 1
+          setCurrentPage(pageNumber.current)
+          getQuestions(pageNumber.current)
+        }
+      })
+      if (node) observer.current.observe(node)
+    },
+    [getQuestionsLoading, questions.has_more]
+  )
   const classes = useStyles()
   return (
     <>
       <CssBaseline />
-      {questions && questions.length > 0 ? (
+      {questions && questions.items && questions.items.length > 0 ? (
         <Paper className={classes.root}>
           <TableContainer className={classes.container}>
             <Table
@@ -73,45 +97,68 @@ const Home = ({ questions, viewDetailsBtnHandler }) => {
                 </StyledTableRow>
               </TableHead>
               <TableBody>
-                {questions.map((question) => (
-                  <StyledTableRow key={question.question_id}>
-                    <StyledTableCell component='th' scope='row'>
-                      {question.owner.display_name}
-                    </StyledTableCell>
-                    <StyledTableCell>{question.title}</StyledTableCell>
-                    <StyledTableCell>
-                      {formatedDate(question.creation_date)}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      <Button
-                        variant='contained'
-                        color='primary'
-                        onClick={(e) => viewDetailsBtnHandler(e, question)}
-                      >
-                        View
-                      </Button>
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
+                {questions.items.map((question, index) => {
+                  return (
+                    <StyledTableRow
+                      key={question.question_id}
+                      ref={
+                        questions.items.length === index + 1
+                          ? lastQuestionElementref
+                          : null
+                      }
+                    >
+                      <StyledTableCell component='th' scope='row'>
+                        {question.owner.display_name}
+                      </StyledTableCell>
+                      <StyledTableCell>{question.title}</StyledTableCell>
+                      <StyledTableCell>
+                        {formatedDate(question.creation_date)}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <Button
+                          variant='contained'
+                          color='primary'
+                          onClick={(e) => viewDetailsBtnHandler(e, question)}
+                        >
+                          View
+                        </Button>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </TableContainer>
         </Paper>
       ) : (
-        <div className={classes.spinner}>
-          <CircularProgress color='secondary' />
-        </div>
+        <>
+          {getQuestionsLoading && (
+            <div className={classes.spinner}>
+              <CircularProgress color='secondary' />
+            </div>
+          )}
+        </>
       )}
     </>
   )
 }
 
 Home.propTypes = {
-  questions: PropTypes.instanceOf(Array)
+  questions: PropTypes.instanceOf(Object),
+  viewDetailsBtnHandler: PropTypes.func,
+  getQuestionsLoading: PropTypes.bool,
+  getQuestions: PropTypes.func,
+  currentPage: PropTypes.number,
+  setCurrentPage: PropTypes.func
 }
 
 Home.defaultProps = {
-  questions: []
+  questions: {},
+  viewDetailsBtnHandler: noop,
+  getQuestionsLoading: false,
+  getQuestions: noop,
+  currentPage: 0,
+  setCurrentPage: noop
 }
 
 export default Home

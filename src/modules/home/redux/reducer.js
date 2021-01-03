@@ -1,7 +1,7 @@
 import * as actionTypes from './actionTypes'
 
 const INITIAL_STATE = {
-  questions: [],
+  questions: {},
   selectedQuestion: {},
   getQuestionsLoading: false
 }
@@ -15,12 +15,22 @@ const appReducer = (state = INITIAL_STATE, action) => {
         ...state,
         getQuestionsLoading: true
       }
-    case actionTypes.GET_QUESTIONS_SUCCESS:
+    case actionTypes.GET_QUESTIONS_SUCCESS: {
+      let tempItems
+      if (state.questions.items && state.questions.items.length > 0) {
+        tempItems = [...state.questions.items, ...payload.items]
+      } else {
+        tempItems = payload.items
+      }
       return {
         ...state,
         getQuestionsLoading: false,
-        questions: payload
+        questions: {
+          ...payload,
+          items: tempItems
+        }
       }
+    }
     case actionTypes.GET_QUESTIONS_ERROR:
       return {
         ...state,

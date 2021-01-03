@@ -1,9 +1,9 @@
 import * as actionTypes from './actionTypes'
 import { getQuestionsAPI } from '../../../utils/api'
 
-export const getQuestions = () => ({
+export const getQuestions = (pageNumber) => ({
   type: actionTypes.GET_QUESTIONS,
-  payload: getQuestionsAPI()
+  payload: getQuestionsAPI(pageNumber)
 })
 
 export const setSelectedQuestion = (question) => ({

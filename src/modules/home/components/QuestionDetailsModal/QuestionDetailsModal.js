@@ -61,25 +61,13 @@ const QuestionDetailsModal = ({ open, handleModal, selectedQuestion }) => {
 QuestionDetailsModal.propTypes = {
   open: PropTypes.bool,
   handleModal: PropTypes.func,
-  addProductButtonHandler: PropTypes.func,
-  addProductInputHandler: PropTypes.func,
-  updateProductButtonHandler: PropTypes.func,
-  handleDateChange: PropTypes.func,
-  state: PropTypes.instanceOf(Object),
-  date: PropTypes.string,
-  clearState: PropTypes.func
+  selectedQuestion: PropTypes.instanceOf(Object)
 }
 
 QuestionDetailsModal.defaultProps = {
   open: false,
   handleModal: noop,
-  addProductButtonHandler: noop,
-  addProductInputHandler: noop,
-  updateProductButtonHandler: noop,
-  handleDateChange: noop,
-  state: {},
-  date: '',
-  clearState: noop
+  selectedQuestion: {}
 }
 
 export default QuestionDetailsModal
